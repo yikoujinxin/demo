@@ -36,8 +36,14 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+    '@nuxtjs/pwa'
   ],
 
+  pwa: {
+    icon: {
+      fileName: 'icon.png'
+    }
+  },
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
   }
