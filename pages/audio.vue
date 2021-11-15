@@ -3,14 +3,6 @@
     <audio controls :src="require('@/assets/out.mp3').default"></audio>
     <hr/>
     <audio controls src="@/assets/out.mp3"></audio>
-    <hr/>
-    <audio controls src="../horse.mp3" ref="audio"></audio>
-    <button
-      @click="playNotification"
-      class="text-2xl rounded px-8 py-2 bg-green-400 hover:bg-green-500"
-    >
-      Play Me
-    </button>
   </div>
 </template>
 <script>
