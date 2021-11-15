@@ -4,15 +4,24 @@
   "private": true,
   "scripts": {
     "dev": "nuxt",
+    "dev:host": "nuxt --hostname '0.0.0.0' --port 8000",
     "build": "nuxt build",
     "start": "nuxt start",
-    "generate": "nuxt generate"
+    "generate": "nuxt generate",
+    "inspect": "nuxt webpack"
   },
   "dependencies": {
+    "@nuxt/babel-preset-app": "^2.15.8",
     "@nuxt/http": "^0.6.4",
     "@nuxtjs/pwa": "^3.3.5",
     "core-js": "^3.15.1",
+    "file-loader": "^6.2.0",
     "nuxt": "^2.15.7"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "pug": "^3.0.2",
+    "pug-plain-loader": "^1.1.0",
+    "sass": "^1.43.4",
+    "sass-loader": "^10.2.0"
+  }
 }

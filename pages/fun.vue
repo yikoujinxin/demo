@@ -1,9 +1,15 @@
-<template>
-  <h1>About page with jQuery and Roboto font</h1>
+<template lang="pug">
+  <div>
+    <h1>About page with jQuery and Roboto font</h1>
+    h2.red Hello {{ name }}!
+  </div>
 </template>
 
 <script>
   export default {
+    data() {
+      return { name: "World" }
+    },
     head() {
       return {
         script: [
@@ -19,10 +25,18 @@
           }
         ]
       }
+    },
+    render(h) {
+      return <h1 class="red">{this.name}</h1>
     }
   }
 </script>
 
+<style lang="scss">
+  .red {
+    color: red;
+  }
+</style>
 <style scoped>
   h1 {
     font-family: Roboto, sans-serif;
