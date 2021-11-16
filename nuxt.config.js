@@ -77,5 +77,15 @@ export default {
   ignore: 'pages/fetch.vue',
   ignoreOptions: {
     ignoreOptions: true
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 8000
+  },
+  loading: '~/components/LoadingBar.vue',
+  loadingIndicator: {
+    name: 'circle',
+    color: '#3B8070',
+    background: 'white'
   }
 }
