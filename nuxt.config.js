@@ -29,10 +29,16 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    '~/plugins/preview.client.js'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
-  components: true,
+  components: {
+    dirs: [
+      '~/components',
+      '~/components/base'
+    ]
+  },
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
@@ -87,5 +93,9 @@ export default {
     name: 'circle',
     color: '#3B8070',
     background: 'white'
+  },
+  router: {
+    // linkActiveClass: 'my-custom-active-link',
+    linkPrefetchedClass: 'nuxt-link-prefetched'
   }
 }

@@ -1,17 +1,14 @@
 <template>
   <!-- <Tutorial/> -->
-  <main>
-    <h1>Home page</h1>
-    <nuxt-link to="/fun">
-        Fun (internal link that belongs to the Nuxt App)
-    </nuxt-link>
-    <hr/>
-    <a href="https://www.google.com">External Link to another page</a>
-  </main>
+  <div>
+    <h1>Hello Nuxters! 👋</h1>
+    <transition name="home"></transition>
+  </div>
 </template>
 
 <script>
 export default {
+  transition: 'home',
   head: {
     title: 'Home page',
     meta: [
@@ -24,3 +21,8 @@ export default {
   }
 }
 </script>
+
+<style>
+  .home-enter-active, .home-leave-active { transition: opacity .5s; }
+  .home-enter, .home-leave-active { opacity: 0; }
+</style>
