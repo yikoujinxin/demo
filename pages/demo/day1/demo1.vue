@@ -1,17 +1,19 @@
 <template>
     <div>
         <ol>
-        <todoItem v-for="item in groceryList" v-bind:todo="item" v-bind:key="item.id">
-        </todoItem>
-    </ol>
+          <todoItem v-for="item in groceryList" v-bind:todo="item" v-bind:key="item.id">
+          </todoItem>
+        </ol>
+          <todoItem2/>
     </div>
 </template>
 
 <script>
-// import todoItem from '@/components/TodoItem'
+import todoItem2 from '@/components/TodoItem'
 export default {
   components: {
-    'todoItem': {props: ['todo'], template: `<li>{{ todo.text }}</li>`}
+    'todoItem': {props: ['todo','todo2'], template: `<li>{{ todo.text }}</li>`},
+    todoItem2
   },
   data() {
     return {
