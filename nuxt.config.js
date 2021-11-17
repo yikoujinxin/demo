@@ -71,7 +71,8 @@ export default {
         options: {
           name: '[path][name].[ext]'
         }
-      })
+      }),
+      config.resolve.alias.vue = 'vue/dist/vue.common'
     },
     plugins: [
       new webpack.ProvidePlugin({

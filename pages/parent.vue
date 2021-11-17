@@ -10,7 +10,7 @@
                     <nuxt-link to="/parent/child2">Child 2</nuxt-link>
                 </li>
                 <li>
-                    <nuxt-link to="/fun" no-prefetch>fun</nuxt-link>
+                    <nuxt-link to="/demo/fun" no-prefetch>fun</nuxt-link>
                 </li>
             </ul>
         </nav>
