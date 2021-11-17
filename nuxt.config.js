@@ -96,6 +96,8 @@ export default {
   },
   router: {
     // linkActiveClass: 'my-custom-active-link',
-    linkPrefetchedClass: 'nuxt-link-prefetched'
-  }
+    linkPrefetchedClass: 'nuxt-link-prefetched',
+    middleware: ['class']
+  },
+  
 }

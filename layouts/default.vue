@@ -1,27 +1,21 @@
 <template>
-    <div>
-        <TheHeader/>
-        <nav>
-            <ul>
-                <li>
-                    <nuxt-link to="/">Home</nuxt-link>
-                </li>
-                
-                <li>
-                    <nuxt-link to="/parent">Parent</nuxt-link>
-                </li>
-            </ul>
-        </nav>
-        <main>
-            <img src="~/assets/logo.svg"/>
-            <Nuxt/>
-        </main>
-        <FooButton />
-        <TheFooter/>
-    </div>
+  <div :class="[`body-${$store.state.class.bodyClass}`]">
+    <nav>
+      <ul>
+        <li>
+          <NuxtLink to="/">Home</NuxtLink>
+        </li>
+        <li>
+          <NuxtLink to="/router-middleware">Router Middleware</NuxtLink>
+        </li>
+      </ul>
+    </nav>
+    <main>
+      <img src="~/assets/logo.svg" />
+      <Nuxt />
+    </main>
+  </div>
 </template>
-
-
 <style>
 :root {
   --primary-color: #00c58e;
@@ -34,28 +28,32 @@ body {
   margin: 0;
 }
 
-a {
+a,
+a:visited {
+  text-decoration: none;
   color: inherit;
-  text-decoration: none;
-}
-nav a:hover {
-  text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
+a:hover,
+a.nuxt-link-exact-active {
+  color: var(--primary-color);
 }
 
 main {
   margin: 0 auto;
-  margin-top: 100px;
+  margin-top: 25vh;
+  margin-bottom: 2rem;
   padding: 0 1rem;
   max-width: 1280px;
   text-align: center;
 }
 
-img {
-  margin-bottom: 1rem;
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+nav {
+  padding: 0 1rem;
 }
 
 ul {
@@ -65,16 +63,23 @@ ul {
   justify-content: center;
   flex-wrap: wrap;
 }
+
 li {
   margin: 0 0.5rem;
   padding: 0.25rem;
   font-size: 1.2rem;
+  transition: 250ms font-size cubic-bezier(1, 0, 0, 1);
 }
 
-nav {
-  padding: 0 1rem;
+.body-index li {
+  font-size: 1.2rem;
 }
-a.nuxt-link-exact-active {
-  color: #00c58e;
+
+.body-router-middleware li {
+  font-size: 3rem;
+}
+
+.body-index li {
+  font-size: 5rem;
 }
 </style>
