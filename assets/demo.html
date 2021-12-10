@@ -9,12 +9,32 @@
 </head>
 <body>
     <div id="overview" class="demo">
-        <blog-post
-        v-for="post in posts"
-        :key="post.id"
-        :title="post.title"
-        >
-        </blog-post>
+        <div class="demo-alert-box">
+            <alert-box>
+                Something bad happened.
+            </alert-box>
+        </div>
+        <todo-list>
+            <template v-slot:default="slotProps">
+                <i class="fas fa-check"></i>
+                <span class="green">{{slotProps.item}}</span>
+            </template>
+        </todo-list>
+        <div :style="{ fontSize: postFontSize + 'em'}">
+            <blog-post
+            v-for="post in posts"
+            :key="post.id"
+            :title="post.title"
+            :content="post.content"
+            @enchange-text="onenchangeText"
+            >
+            cvbxvcb
+            </blog-post>
+        </div>
+        
+        {{myText}}<br />
+        <my-component v-model.capitalize="myText"><my-component>
+
     </div>
 </body>
 </html>
@@ -24,10 +44,17 @@
         data(){
             return {
                 posts:[
-                        { id:1, title:'My journey with Vue'},
-                        { id:2, title:'Blogging with Vue'},
-                        { id:3, title:'why Vue is so fun'}
-                    ]
+                        { id:1, title:'My journey with Vue', content:'Content1'},
+                        { id:2, title:'Blogging with Vue', content:'Content2'},
+                        { id:3, title:'why Vue is so fun', content:'Content3'}
+                    ],
+                postFontSize:1,
+                myText: ''
+            }
+        },
+        methods: {
+            onenchangeText(description,enchangeAmount){
+                this.postFontSize += enchangeAmount
             }
         },
         components:{
@@ -45,9 +72,65 @@
             }
         }
     });
+    app.component("todo-list", {
+        data(){
+            return {
+                items: ['Feed a cat', 'Buy milk']
+            }
+        },
+        template:`
+        <ul>
+            <li v-for="(item, index) in items">
+                <slot :item="item"></slot>
+            </li>
+        </ul>
+        `
+    })
+    app.component("alert-box", {
+        template:`
+        <strong>Error!</strong>
+        <slot></slot>
+        `
+    })
+    app.component("my-component", {
+        props:{
+            modelValue: String,
+            modelModifiers: {
+                default: () => ({})
+            }
+        },
+        emits: ['update:modelValue'],
+        methods: {
+            emitValue(e){
+                let value = e.target.value
+                if (this.modelModifiers.capitalize) {
+                    value = value.charAt(0).toUpperCase() + value.slice(1)
+                }
+                this.$emit('update:modelValue',value)
+            }
+        },
+        template: `
+            <input type="text"
+            :value="modelValue"
+            @input="emitValue">
+        `,
+        created(){
+            console.log(this.modelModifiers)
+        }
+    })
     app.component('blog-post',{
-        props: ['title'],
-        template: `<h4>{{title}}</h4>`
+        props: ['title','content'],
+        // emits:['enlargeText','ensmallText'],
+        emits:{
+            enchangeText: function(description,enchangeAmount){
+                console.log(description+' button is clicked!')
+                return true
+            }
+        },
+        template: `<h4>{{title}}</h4>
+        <p>{{content}}
+        <button @click="$emit('enchangeText','larger',0.2)">+</button>
+        <button @click="$emit('enchangeText','smaller',-0.1)">-</button></p><br/>`
     }),
     app.component('button-counter',{
         data(){
@@ -73,5 +156,10 @@
   margin-bottom: 40px;
   user-select: none;
   overflow-x: auto;
+}
+.demo-alert-box {
+  padding: 10px 20px;
+  background: #f3beb8;
+  border: 1px solid #f09898;
 }
 </style>
