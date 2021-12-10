@@ -9,6 +9,10 @@
 </head>
 <body>
     <div id="overview" class="demo">
+        <custom-form @emit-submit="emitSubmit">hava-slot</custom-form>
+        <custom-layout id="custom-layout" @click="changeValue"></custom-layout>
+        <date-picker data-status="activated" @change="showChange"></date-picker>
+        <select-picker @change="showChange"></select-picker>
         <div class="demo-alert-box">
             <alert-box>
                 Something bad happened.
@@ -55,6 +59,12 @@
         methods: {
             onenchangeText(description,enchangeAmount){
                 this.postFontSize += enchangeAmount
+            },
+            showChange(event){
+                console.log(event.target.value)
+            },
+            emitSubmit(event){
+                console.log("The submited value is ",event)
             }
         },
         components:{
@@ -72,6 +82,59 @@
             }
         }
     });
+    app.component("custom-form",{
+        data(){
+            return {
+                email: '',
+                password: '',
+            }
+        },
+        methods:{
+            checkForm(email,password){
+                console.log('Checking')
+                this.$emit('emit-submit',{email,password});
+            }
+        },
+        emits:{
+            click:null,
+            submit:({ email, password })=>{
+                if (email && password){
+                    console.log('email && password submit!')
+                    return true
+                }else{
+                    console.warn('Invalid submit event payload!')
+                    return false
+                }
+            }
+        },
+        // <form @submit="checkForm">
+        //     <input name="email" id="email" v-model="email" type="text" placeholder="email"/>&nbsp;
+        //     <input name="password" id="password" v-model="password" type="password" placeholder="password"/>
+        //     <p> <input type="submit" value="Submit"/> </p>
+        // </form>
+        template:`
+        <p>
+            <input name="email" id="email" v-model="email" type="text" placeholder="email"/>&nbsp;
+            <input name="password" id="password" v-model="password" type="password" placeholder="password"/>&nbsp;
+            <button @click="checkForm(email,password)"><slot>submit</slot></button>
+        </p>
+        `
+    }),
+    app.component("custom-layout", {
+        template: `
+        <header></header>
+        <main v-bind="$attrs"></main>
+        <footer></footer>
+        `
+    })
+    app.component("date-picker",{
+        inheritAttrs: false,
+        template:`
+        <div class="date-picker">
+            <input type="datetime-local" v-bind="$attrs"/>
+        </div>
+        `,
+    })
     app.component("todo-list", {
         data(){
             return {
@@ -85,7 +148,19 @@
             </li>
         </ul>
         `
-    })
+    }),
+    app.component("select-picker", {
+        template:`
+        <select>
+            <option value="1">Yesterday</option>
+            <option value="2">Today</option>
+            <option value="3">Tomorrow</option>
+        </select>
+        `,
+        created(){
+            console.log("@@@",this.$attrs)
+        }
+    }),
     app.component("alert-box", {
         template:`
         <strong>Error!</strong>
