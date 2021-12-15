@@ -9,6 +9,7 @@
 </head>
 <body>
     <div id="overview" class="demo">
+        <h1>now: {{now}}</h1>
         <todo-button action="add" v-slot:default="{action = 'delete'}">
             Click here will {{ action }} an item
         </todo-button>
@@ -28,6 +29,7 @@
             </alert-box>
         </div>
         <todo-list>
+            <todo-list-statistics/>
             <template v-slot:default="slotProps">
                 <i class="fas fa-check"></i>
                 <span class="green">{{slotProps.item}}</span>
@@ -77,10 +79,6 @@
               @input="$emit('update:lastName', $event.target.value)">
               
         `,
-        // mounted(){
-        //     console.log("firstName: ",this.firstName)
-        //     console.log("lastName: ",this.lastName)
-        // }
     }
     const app = Vue.createApp({
         data(){
@@ -94,6 +92,22 @@
                     ],
                 postFontSize:1,
                 myText: '',
+                message: 'message',
+            }
+        },
+        computed:{
+            fullName: {
+                get() {
+                    return this.firstName + ' ' + this.lastName
+                },
+                set(newValue) {
+                    const names = newValue.split(' ')
+                    this.firstName = names[0]
+                    this.lastName = names[names.length - 1]
+                }
+            },
+            now() {
+                return Date.now()
             }
         },
         methods: {
@@ -183,6 +197,11 @@
                 items: ['Feed a cat', 'Buy milk']
             }
         },
+        provide() {
+            return {
+                propLength: Vue.computed(() => this.items.length)
+            }
+        },
         template:`
         <ul>
             <li v-for="(item, index) in items">
@@ -190,6 +209,12 @@
             </li>
         </ul>
         `
+    }),
+    app.component("todo-list-statistics", {
+        inject:["propLength"],
+        created(){
+            console.log(`Injected property: ${this.propLength}`)
+        }
     }),
     app.component("select-picker", {
         template:`

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/vue@next"></script><!--vue3.2.24-->
+    <title>Document</title>
+</head>
+<body>
+    <div id="overview" class="demo">
+        <p>
+            <input v-model="question"/>
+        </p>
+        <p>{{this.answer}}</p>
+    </div>
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+<script>
+    const vm = Vue.createApp({
+        data(){
+            return {
+                question: '',
+                answer: 'Questions usually contain a question mark. ;-)'
+            }
+        },
+        watch: {
+            question(newValue, oldValue){
+                if(newValue.indexOf('?') > -1){
+                    console.log('question...')
+                    this.getAnswer()
+                }
+            }
+        },
+        methods: {
+            getAnswer(){
+                this.answer = 'Thinking...'
+                axios
+                    .get('https://yesno.wtf/api')
+                    .then(response => {
+                        this.answer = response.data.answer
+                    })
+                    .catch(error => {
+                        this.answer = 'Error! Could not reach the API. ' + error
+                    })
+            }
+        }
+    }).mount('#overview')
+</script>
+
+<style>
+.demo {
+  font-family: sans-serif;
+  border: 1px solid #eee;
+  border-radius: 2px;
+  padding: 20px 30px;
+  margin-top: 1em;
+  margin-bottom: 40px;
+  user-select: none;
+  overflow-x: auto;
+}
+.demo-alert-box {
+  padding: 10px 20px;
+  background: #f3beb8;
+  border: 1px solid #f09898;
+}
+</style>
