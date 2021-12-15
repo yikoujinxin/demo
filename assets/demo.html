@@ -9,6 +9,15 @@
 </head>
 <body>
     <div id="overview" class="demo">
+        <todo-button action="add" v-slot:default="{action = 'delete'}">
+            Click here will {{ action }} an item
+        </todo-button>
+        <p>First name: {{firstName}}</p>
+        <p>Last name: {{lastName}}</p>
+        <user-name
+            v-model:first-name="firstName"
+            v-model:last-name="lastName">
+        </user-name>
         <custom-form @emit-submit="emitSubmit">hava-slot</custom-form>
         <custom-layout id="custom-layout" @click="changeValue"></custom-layout>
         <date-picker data-status="activated" @change="showChange"></date-picker>
@@ -44,16 +53,47 @@
 </html>
 
 <script >
+    const todoButton = {
+        props: ["action"],
+        template:`
+            <slot>delete</slot>
+        `
+    }
+    const UserName = {
+        props: {
+            firstName: String,
+            lastName: String
+        },
+        // emits: ['update:firstName','update:lastName'],
+        template:`
+            <input
+              type="text"
+              :value="firstName"
+              @input="$emit('update:firstName', $event.target.value)">
+            
+            <input
+              type="text"
+              :value="lastName"
+              @input="$emit('update:lastName', $event.target.value)">
+              
+        `,
+        // mounted(){
+        //     console.log("firstName: ",this.firstName)
+        //     console.log("lastName: ",this.lastName)
+        // }
+    }
     const app = Vue.createApp({
         data(){
             return {
+                firstName: 'Jack',
+                lastName: 'Smith',
                 posts:[
                         { id:1, title:'My journey with Vue', content:'Content1'},
                         { id:2, title:'Blogging with Vue', content:'Content2'},
                         { id:3, title:'why Vue is so fun', content:'Content3'}
                     ],
                 postFontSize:1,
-                myText: ''
+                myText: '',
             }
         },
         methods: {
@@ -68,6 +108,8 @@
             }
         },
         components:{
+            UserName,
+            todoButton,
             'component-a':{
                 data(){
                     return {
