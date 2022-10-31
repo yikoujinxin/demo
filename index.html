@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>	
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/style.css">
+	<link rel="shortcut icon" href="/assets/img/favicon.svg" type="image/x-icon">
+	<title>調査結果｜GENO 遺伝子調査</title>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6GKNLQ8ELK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6GKNLQ8ELK');
+</script>
+<body id="report">
+	<div id="nav" include="/components/nav.html"></div>
+	<!-- <div id="nav" include="/components/nav.html"></div> -->
+	<!-- <a href="/"><img class="logo top" src="/assets/img/geno-logo.svg" alt="GENO logo"></a> -->
+	<a class="top-link" href="/"><img class="logo top" src="/assets/img/geno-logo.svg" alt="GENO logo"></a>
+	<h1 class="page-title">調査結果確認</h1>
+	<form id="test-query">
+		<fieldset>
+			<input type="email" id="user-email" placeholder="メールアドレス" required>
+			<input type="text" pattern="GN[A-Z]{2}[0-9A-F]{8}" id="kit-number" placeholder="キット番号" required oninput="this.value = this.value.toUpperCase()">
+		</fieldset>
+		<p class="err not-found">エラー：メールアドレスまたはキット番号が見つかりません。</p>
+		<p class="err timeout">タイムアウトエラー：しばらく時間が経ってからもう一度お試しください。</p>
+		<button type="submit" onclick="queryResults()">検索</button>
+	</form>
+	<div class="smart-wrapper results">
+		<div class="results">
+			<h1 class="results-title">調査結果</h1>
+			<div id="progress-bar">
+				<div class="res-step" id="res-step1">
+					<div class="circle"></div>
+					<span>受領待ち</span>
+				</div>
+				<div class="res-step" id="res-step2">
+					<div class="circle"></div>
+					<span>調査中</span>
+				</div>
+				<div class="res-step" id="res-step3">
+					<div class="circle"></div>
+					<span>完了</span>
+				</div>
+			</div>
+			<div class="results-table">
+				<div id="nickname" class="results-item">
+					<p class="item-name">ニックネーム</p>
+					<!-- <p id="nickname-value" class="item-value">nickname</p> -->
+					<p id="nickname-value" class="item-value">&nbsp;</p>
+				</div>
+				<div id="test-type" class="results-item">
+					<p class="item-name">調査種別</p>
+					<!-- <p id="test-type-value" class="item-value">肥満遺伝子調査</p> -->
+					<p id="test-type-value" class="item-value">&nbsp;</p>
+				</div>
+				<div id="apply-date" class="results-item">
+					<p class="item-name">調査申込日</p>
+					<!-- <p id="apply-date-value" class="item-value">2022/04/15</p> -->
+					<p id="apply-date-value" class="item-value">&nbsp;</p>
+				</div>
+				<div id="receive-date" class="results-item">
+					<p class="item-name">サンプル受領日</p>
+					<!-- <p id="receive-date-value" class="item-value">2022/04/17</p> -->
+					<p id="receive-date-value" class="item-value">&nbsp;</p>
+				</div>
+				<div id="results-date" class="results-item">
+					<p class="item-name">結果通知日</p>
+					<!-- <p id="results-date-value" class="item-value">2022/04/22</p> -->
+					<p id="results-date-value" class="item-value">&nbsp;</p>
+				</div>
+				<div id="test-result" class="results-item">
+					<p class="item-name">調査結果</p>
+					<div class="genes item-value">
+						<div class="gene">
+							<p id="gene1-label" class="gene-label"></p>
+							<p id="gene1-value" class="gene-value">&nbsp;</p>
+						</div>
+						<div class="gene">
+							<p id="gene2-label" class="gene-label"></p>
+							<p id="gene2-value" class="gene-value">&nbsp;</p>
+						</div>
+						<div class="gene">
+							<p id="gene3-label" class="gene-label"></p>
+							<p id="gene3-value" class="gene-value">&nbsp;</p>
+						</div>
+					</div>
+				</div>
+			</div> <!-- .results-table -->
+			<!-- <button class="download disabled"  onclick="openModal('soon')">調査結果レポートを<br><span>ダウンロード</span></button> -->
+			<button class="download" onclick="fetchPDF()">調査結果レポートを<br><span>ダウンロード</span></button>
+			<p class="err report"></p>
+		</div> <!-- .results -->
+	</div> <!-- .smart-wrapper -->
+	<div include="/components/footer.html"></div>
+</body>
+<script src="/script.js"></script>
+<script src="/gene-list.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+<script>
+	jQuery.noConflict();
+	addHoverCursor('.logo', 'top');
+
+	let gender, birth, height, weight, r1, r2, r3;
+	let kitNumber, kitType, productName, emailedTime;
+	
+	// form field reset listeners
+	[...$$('#test-query input')].forEach(input => {
+		input.onkeypress = () => resetErrMsgs();
+		input.onchange = () => resetErrMsgs();
+	});
+
+	function queryResults() {
+		event.preventDefault();
+		if ($id('test-query').reportValidity()) {
+			loadCursor(event);
+			kitNumber = $id('kit-number').value;
+			let resultUrl = baseUrl + 'api/geno/query_result';
+			let content = {
+				"user_email": $id('user-email').value,
+				"commodity_code": kitNumber,
+			}
+			let result = jQuery.ajax({
+				url: resultUrl,
+				type: 'post',
+				timeout: 10000,
+				data: content,
+				success: data => {
+					console.log(data);
+									
+					kitType = kitNumber.slice(0, 4).toLowerCase();
+					[...$$('.gene-label')].forEach(geneLabel => {
+						geneLabel.textContent = geneList[kitType][geneLabel.id];
+					});
+
+					productName = data.product_name;
+					emailedTime = data.emailed_time;
+					gender = data.gender; birth = data.birth;
+					height = data.height; weight = data.weight;
+					r1 = data.result1; r2 = data.result2; r3 = data.result3;
+
+					$('.smart-wrapper.results').classList.add('show');
+					$('.smart-wrapper.results').scrollIntoView({ behavior: 'smooth' });
+
+					$id('nickname-value').textContent = data.user_name;
+					$id('test-type-value').textContent = productName;
+					$id('apply-date-value').textContent = data.actived_time;
+					$id('receive-date-value').textContent = data.accepted_time;
+					$id('results-date-value').textContent = emailedTime;
+
+					$id('gene1-value').textContent = r1;
+					$id('gene2-value').textContent = r2;
+					$id('gene3-value').textContent = r3;
+					
+					// 结果展示
+					if (data.accepted_time == null) {
+						$id('res-step1').classList.add('filled');
+						// $id('receive-date-value').textContent = '--';
+						// $id('results-date-value').textContent = '--';
+						// $id('gene1-value').textContent = '--';
+						// $id('gene2-value').textContent = '--';
+						// $id('gene3-value').textContent = '--';
+					}	else if(emailedTime == null) {
+						$id('res-step1').classList.add('filled');
+						$id('res-step2').classList.add('filled');
+						// $id('receive-date-value').textContent = data.accepted_time;
+						// $id('results-date-value').textContent = '--';
+						// $id('gene1-value').textContent = '--';
+						// $id('gene2-value').textContent = '--';
+						// $id('gene3-value').textContent = '--';
+					} else {
+						$id('res-step1').classList.add('filled');
+						$id('res-step2').classList.add('filled');
+						$id('res-step3').classList.add('filled');										
+						// $id('receive-date-value').textContent = data.accepted_time;
+						// $id('results-date-value').textContent = emailedTime;
+						// $id('gene1-value').textContent = r1;
+						// $id('gene2-value').textContent = r2;
+						// $id('gene3-value').textContent = r3;
+					}
+					resetErrMsgs();
+					removeCursor();
+				},
+				error: err => {
+					if (err.statusText == "timeout") {
+						$('.err.timeout').classList.add('show');
+					} else { // err.status == 404
+						let elements = [...$$('.item-value:not(.genes), .gene-value')];
+						elements.forEach(el => el.innerHTML = '&nbsp;');
+						$('.smart-wrapper.results').classList.remove('show');
+						$('.err.not-found').classList.add('show');
+					}
+					removeCursor();
+				},
+			});
+		}
+	}
+
+	function fetchPDF() {
+		loadCursor(event);
+		$('button.download').classList.add('pending');
+		$('p.err.report').textContent = 'レポート生成中。少々お待ちください。';
+		$('p.err.report').classList.add('show', 'loading');
+		let fetchPdfUrl = baseUrl + 'api/geno/fetchPdf';
+		let content = {
+			'kitNumber': kitNumber, 'emailedTime': emailedTime,
+			'gender': gender, 'birth': birth,
+			[geneList[kitType]['gene1-label']]: r1,
+			[geneList[kitType]['gene2-label']]: r2,
+			[geneList[kitType]['gene3-label']]: r3
+		};
+		if (kitType == "gnss") content = {
+			...content, 'height': height, 'weight': weight
+		};
+		console.log(content);
+		jQuery.ajax({
+			url: fetchPdfUrl,
+			type: 'post',
+			cors: true,
+			data: content,
+			// timeout: 1000, // milliseconds
+			timeout: 600000, // milliseconds
+			success: (data, status) => {
+				if (data.success) {
+					if (MyBrowserIsIE()) {
+						// IE10及びEdgeブラウザー
+						let pdfData = new Blob(
+							[new Uint8Array(data.userData.data).buffer],
+							{ type: "application/pdf" }
+						);
+						navigator.msSaveBlob(pdfData, `GENO ${productName}遺伝子調査結果.pdf`);
+					} else {
+						let pdfContent = data.userData;
+						// 非ie ブラウザー
+						createDownloadButton(pdfContent, `GENO ${productName}遺伝子調査結果.pdf`);
+					}
+					// $('p.err.report').textContent = 'レポート生成が完了しました。';
+					$('p.err.report').classList.remove('loading');
+					$('p.err.report').classList.add('success');
+				} else {
+					alert(`失敗しました。 ${data.error}`);
+				}
+			},
+			error: err => {
+				$('p.err.report').classList.remove('loading');
+				$('p.err.report').classList.add('fail');
+			},
+			complete: () => {
+				removeCursor();
+				$('button.download').classList.remove('pending');
+			}
+		});
+	}
+
+	function createDownloadButton(content, fileName) {
+		let url = window.URL.createObjectURL(
+			new Blob([new Uint8Array(content).buffer], {
+				type: "application/pdf",
+			})
+		);
+		const viewerPath = baseUrl == 'https://api.genocheck.jp/' ? "https://genocheck.jp/pdfjs/web/viewer.html?file=" : 'http://127.0.0.1:5502/pdfjs/web/viewer.html?file='
+		url = viewerPath + url;
+		$('p.err.report').innerHTML = `レポート生成が完了しました。<br>開かない場合は<a target="_blank" href="${url}">こちら</a>をクリックしてください。<br>また、PDF に空白・脱落の部分がありましたら、<br>サポートまでご連絡お願いいたします。`;
+
+		window.open(url, "Geno");
+	}
+
+	function MyBrowserIsIE() {
+		let isIE = false;
+		if (navigator.userAgent.indexOf("compatible") > -1 &&
+				navigator.userAgent.indexOf("MSIE") > -1) {
+			// ieブラウザー
+			isIE = true;
+		}
+		if (navigator.userAgent.indexOf("Trident") > -1) {
+			// edge ブラウザー
+			isIE = true;
+		}
+		return isIE;
+	}
+
+	function genPDF() {
+		// temporarily retrieve PDF template from backend
+
+		// create jsPDF file
+		let doc = new jsPDF();
+		// let specialElementHandlers = {
+		// 	'#hidediv' : function(element, render) { return true; }
+		// };
+
+		// add page content
+		// loop through each file in /template
+		let reportLength = 1;
+		for (let i = 1; i <= reportLength; i++) {
+			let filePath = `./template/page${i}.html`;
+			fetch(filePath).then(response => {
+				if (response.ok) return response.text();
+				throw new Error(`page${i}.html does not exist.`);
+			}).then(data => {
+				let pageContent = getContent(filePath, i).resolve(data);
+				console.log(pageContent);
+				doc.fromHTML(pageContent.get(0), 20, 20, {
+					'width': 1080,
+					// 'elementHandlers': specialElementHandlers
+				});
+				if (i < reportLength) { doc.addPage(); }
+			}).catch(error => {
+				console.log(error);	
+			});
+		}
+		
+		// prompt download of compiled PDF
+		doc.save('Test.pdf');
+
+	}
+
+	function setContent(text, index) {
+		let el = document.createElement('div');
+		el.innerHTML = text;
+		el.id = 'page' + index;
+		return el;
+	}
+
+	async function getContent(filePath, index) {
+		try {
+			const response = await fetch(filePath);
+			if (!response.ok) return;
+			let text = await response.text();
+			
+			let el = document.createElement('div');
+			el.innerHTML = text;
+			el.id = `page${index}`;
+			console.log(el);
+		} catch (err) {
+			console.error(err.message);
+		}
+	}
+
+</script>
+</html>
