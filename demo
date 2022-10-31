@@ -1,0 +1,12 @@
+
+    function assign(arr, vars) {
+    var x = {};
+    var num = Math.min(arr.length, vars.length);
+    for (var i = 0; i < num; ++i) {
+        x[vars[i]] = arr[i];
+    }
+    return x;
+}
+var arr = [1, 2, 3];
+var x = assign(arr, ['a', 'b', 'c']);
+var z = x.a + x.b + x.c;  // z == 6
